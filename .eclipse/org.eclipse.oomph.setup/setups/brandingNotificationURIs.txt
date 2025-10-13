@@ -1,0 +1,3 @@
+https://www.eclipse.org/sponsor/ide/?scope=${scope}&version=${scope.version}&campaign=2025-03
+https://www.eclipse.org/sponsor/ide/?scope=${scope}&version=${scope.version}&campaign=2025-06
+https://www.eclipse.org/sponsor/ide/?scope=${scope}&version=${scope.version}&campaign=2025-09
