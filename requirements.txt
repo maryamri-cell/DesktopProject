@@ -1,0 +1,20 @@
+# ============================================================
+# requirements.txt — Dépendances Ahsan Khota
+# ============================================================
+
+# Phase 1 — Socle
+PyQt5>=5.15.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Phase 3 — IA Questions + Images (décommenter quand prêt)
+# groq>=0.4.0
+# requests>=2.31.0
+# Pillow>=10.0.0
+
+# Phase 4 — Agent RL (décommenter quand prêt)
+# stable-baselines3>=2.0.0
+# gymnasium>=0.29.0
+
+# Phase 5 — Multijoueur (décommenter quand prêt)
+# supabase>=2.0.0

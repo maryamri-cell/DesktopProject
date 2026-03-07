@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+assets/images/
+*.pkl
+.env
