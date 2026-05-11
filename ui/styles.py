@@ -293,3 +293,102 @@ QFrame {{
     border-radius: 14px;
 }}
 """
+
+# --- STYLES MASTERS DRAFT QUIZ ---
+STYLE_MASTERS_HEADER = """
+QLabel {
+    color: #ffd700;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: rgba(20, 30, 40, 0.7);
+    border-bottom: 1px solid #333;
+    padding: 8px;
+    letter-spacing: 2px;
+}
+"""
+
+STYLE_MANCHE_BAR = """
+QLabel {
+    background-color: rgba(10, 20, 30, 0.8);
+    color: #ddd;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px;
+    border-top: 1px solid #444;
+}
+"""
+
+STYLE_BANNER_ROUGE = f"""
+QLabel {{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a0000, stop:1 #2a0000);
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+    border: 2px solid #660000;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    letter-spacing: 2px;
+}}
+"""
+
+STYLE_BANNER_BLEU = f"""
+QLabel {{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00004a, stop:1 #00002a);
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+    border: 2px solid #000066;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    letter-spacing: 2px;
+}}
+"""
+
+STYLE_QUESTION_BOX = """
+QLabel {
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.8, fx:0.5, fy:0.5, stop:0 #1a1a2a, stop:1 #000000);
+    color: #ffffff;
+    border: 2px solid #8b7355;
+    border-radius: 25px;
+    padding: 25px;
+    font-size: 20px;
+    font-weight: bold;
+}
+"""
+
+STYLE_OPTION_MASTERS = """
+QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1e272e, stop:1 #000000);
+    color: #ffffff;
+    border: 2px solid #485460;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 15px 25px;
+    text-align: left;
+}
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #485460, stop:1 #1e272e);
+    border-color: #ffd700;
+}
+QPushButton:pressed {
+    background-color: #ffd700;
+    color: #000000;
+}
+"""
+
+STYLE_GLASS_PANEL = """
+    QFrame {
+        background: rgba(10, 20, 40, 0.75);
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        border-radius: 15px;
+    }
+"""
+
+STYLE_PREMIUM_CARD = """
+    QFrame {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1a2540, stop:1 #0d1525);
+        border: 2px solid #00d4ff;
+        border-radius: 16px;
+    }
+"""

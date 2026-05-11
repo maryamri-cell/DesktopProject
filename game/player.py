@@ -17,7 +17,12 @@ class Player:
         self.nation     = str(data.get("nationality_name", "Inconnu"))
         self.age        = int(data.get("age", 0))
         self.position   = str(data.get("player_positions", "??")).split(",")[0].strip()
-        self.image_path = None   # sera rempli par Pollinations.ai (Phase 3)
+        self.player_id  = int(data.get("player_id", 0))
+        self.image_path = None   
+        self.photo_path = None   # Chemin local vers la photo téléchargée
+        self.pitch_pos  = None   # (x_ratio, y_ratio) pour le placement libre
+        self.reputation = int(data.get("international_reputation", 1))
+        self.overall_reputation = int(data.get("overall", 0)) # Used for "fame" proxy
 
         # Rating CACHÉ — attribut privé Python
         self.__rating   = int(data.get("overall", 0))

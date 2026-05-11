@@ -3,6 +3,10 @@
 # ============================================================
 
 import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 # --- Chemins ---
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
@@ -16,17 +20,21 @@ FIFA_VERSION   = 24.0
 TOP_PLAYERS    = 500       # charger le top N joueurs par rating
 
 # --- Jeu ---
-TOTAL_MANCHES  = 11        # nombre de questions par partie
-MAX_JAUNES     = 3         # cartons jaunes avant carton rouge
+TOTAL_MANCHES  = 18        # nombre de questions réussies par partie (6 DEF + 6 MID + 4 ATT + 2 GK)
+MAX_JAUNES     = 2         # cartons jaunes avant carton rouge (2 jaunes = 1 rouge)
 
 # --- Touches Buzz (clavier) ---
 BUZZ_KEY_ROUGE = "Q"       # équipe rouge — côté gauche clavier
 BUZZ_KEY_BLEU  = "P"       # équipe bleue  — côté droit clavier
 
-# --- APIs (à remplir plus tard) ---
-GROQ_API_KEY      = ""     # console.groq.com
-SUPABASE_URL      = ""     # settings → API → Project URL
-SUPABASE_KEY      = ""     # settings → API → Secret key
+# --- APIs ---
+GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
+SUPABASE_URL       = os.getenv("SUPABASE_URL", "")
+SUPABASE_ANON_KEY  = os.getenv("SUPABASE_ANON_KEY", "")
+MISTRAL_API_KEY    = os.getenv("MISTRAL_API_KEY", "")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+# Fallback conservé pour compatibilité avec l'ancien nom de variable
+SUPABASE_KEY       = os.getenv("SUPABASE_KEY", SUPABASE_ANON_KEY)
 
 # --- UI ---
 APP_TITLE      = "AHSAN KHOTA — Football Draft Quiz"

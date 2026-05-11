@@ -1,179 +1,219 @@
 # ============================================================
-# ai/agent.py — Agent IA Q-Learning pour Ahsan Khota
+# ai/agent.py — Adversaire de jeu (ComputerOpponent)
 # ============================================================
 
 import random
-import pickle
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ai.profiles import PROFILES
 
-
-class QLearningAgent:
+class ComputerOpponent:
     """
-    Agent IA adaptatif basé sur Q-Learning.
-    Joue en tant qu'équipe bleue (adversaire automatique).
-
-    3 niveaux de difficulté :
-    - easy   : choix quasi-aléatoires, lent à buzzer
-    - medium : bon instinct, vitesse modérée
-    - hard   : quasi-optimal, buzz rapide
+    Simule un adversaire humain déterministe et réaliste.
+    Remplace l'ancien système de Q-Learning.
     """
 
-    DIFFICULTIES = {
-        "easy": {
-            "epsilon": 0.60,
-            "buzz_delay_ms": 3000,
-            "answer_accuracy": 0.35,
-            "rating_knowledge": 0.20,
-        },
-        "medium": {
-            "epsilon": 0.30,
-            "buzz_delay_ms": 1800,
-            "answer_accuracy": 0.60,
-            "rating_knowledge": 0.50,
-        },
-        "hard": {
-            "epsilon": 0.05,
-            "buzz_delay_ms": 800,
-            "answer_accuracy": 0.85,
-            "rating_knowledge": 0.90,
-        },
-    }
+    def __init__(self, difficulty: str = "medium", seed: int | None = None):
+        self.difficulty = difficulty.lower()
+        self.profile = PROFILES.get(self.difficulty, PROFILES["medium"])
+        self.rng = random.Random(seed if seed is not None else 0)
+        
+        # État interne émotionnel (momentum)
+        self.confidence_modifier = 1.0
+        self._consecutive_successes = 0
+        self._consecutive_failures = 0
 
-    def __init__(self, difficulty: str = "medium"):
-        params = self.DIFFICULTIES.get(difficulty, self.DIFFICULTIES["medium"])
-        self.difficulty        = difficulty
-        self.epsilon           = params["epsilon"]
-        self.buzz_delay_ms     = params["buzz_delay_ms"]
-        self.answer_accuracy   = params["answer_accuracy"]
-        self.rating_knowledge  = params["rating_knowledge"]
+    def reset_match_context(self):
+        """Réinitialise le contexte émotionnel pour un nouveau match."""
+        self.confidence_modifier = 1.0
+        self._consecutive_successes = 0
+        self._consecutive_failures = 0
 
-        # Q-Learning hyper-paramètres
-        self.alpha   = 0.1    # taux d'apprentissage
-        self.gamma   = 0.95   # facteur de discount
-        self.q_table = {}     # {(state_key, action): q_value}
+    # ── Système de Buzz ───────────────────────────────────
+    
+    def decide_action(self, game_state) -> str:
+        """
+        Décide de l'action à entreprendre (BUZZ, SKIP, WAIT).
+        """
+        if self.should_skip(game_state):
+            return "SKIP"
+        
+        if self.should_buzz(game_state):
+            return "BUZZ"
+            
+        return "WAIT"
 
-    # ─────────────────────────────────────────────────────
-    # REPRÉSENTATION D'ÉTAT
-    # ─────────────────────────────────────────────────────
-    def _state_key(self, game_state) -> str:
-        """Représentation simplifiée de l'état pour la Q-table."""
-        gs = game_state
-        my   = gs.team_bleu
-        opp  = gs.team_rouge
-        return (
-            f"m{gs.manche}_"
-            f"my{len(my.players)}_opp{len(opp.players)}_"
-            f"myj{my.jaunes}_oppj{opp.jaunes}_"
-            f"myr{my.rouges}_oppr{opp.rouges}"
-        )
-
-    # ─────────────────────────────────────────────────────
-    # SÉLECTION D'ACTION (epsilon-greedy)
-    # ─────────────────────────────────────────────────────
-    def choose_action(self, state_key: str, available_actions: list) -> str:
-        """Sélection epsilon-greedy dans la Q-table."""
-        if random.random() < self.epsilon:
-            return random.choice(available_actions)
-
-        q_values = {
-            a: self.q_table.get((state_key, a), 0.0)
-            for a in available_actions
-        }
-        max_q = max(q_values.values())
-        best  = [a for a, q in q_values.items() if q == max_q]
-        return random.choice(best)
-
-    # ─────────────────────────────────────────────────────
-    # DÉCISIONS DE JEU
-    # ─────────────────────────────────────────────────────
     def should_buzz(self, game_state) -> bool:
-        """Décide si l'agent doit buzzer."""
-        state = self._state_key(game_state)
-        action = self.choose_action(state, ["buzz", "wait"])
-        return action == "buzz"
+        """
+        Décide si l'IA buzz en fonction de sa confiance.
+        """
+        threshold = 1.0 - (self.profile["buzz_aggressiveness"] * self.confidence_modifier)
+        
+        if self._is_losing(game_state):
+            threshold *= 0.8
+            
+        return self.rng.random() > threshold
+
+    def get_buzz_delay(self, question_type: str) -> int:
+        """
+        Calcule le délai de réaction (ms) de manière "humaine".
+        """
+        base = self.profile["base_reaction_ms"]
+        jitter = self.profile["jitter_ms"]
+        
+        # Modificateurs par type de question
+        type_mod = {
+            "IMAGE_GUESS": 1.5,     # Plus long à reconnaître une image
+            "WHO_AM_I": 1.3,        # Lecture du texte
+            "MCQ": 0.8,             # Réponse rapide sur du texte simple
+            "TRANSFER_TRIVIA": 1.1,
+        }.get(question_type, 1.0)
+        
+        # Calcul final avec jitter non-linéaire
+        delay = (base * type_mod) + self.rng.gauss(0, jitter / 2)
+        
+        # Momentum : si confiant, on réagit plus vite
+        delay /= self.confidence_modifier
+        
+        return int(max(400, delay))
+
+    # ── Système de Réponse ───────────────────────────────
 
     def choose_answer(self, question: dict) -> str:
-        """Choisit une réponse parmi les 4 options."""
+        """
+        Choisit une réponse en fonction de ses connaissances.
+        """
         correct = question.get("answer", "")
         options = question.get("options", [])
-
-        if random.random() < self.answer_accuracy:
+        q_type = question.get("type", "MCQ")
+        
+        # Probabilité de succès
+        success_rate = self.profile["accuracy"].get(q_type, 0.5)
+        
+        # Ajustement par momentum
+        success_rate *= self.confidence_modifier
+        
+        if self.rng.random() < success_rate:
+            self._on_success()
             return correct
+        else:
+            self._on_failure()
+            wrong = [o for o in options if o != correct]
+            return self.rng.choice(wrong) if wrong else correct
 
-        wrong = [o for o in options if o != correct]
-        return random.choice(wrong) if wrong else correct
+    # ── Système de Pick (Cartes) ─────────────────────────
 
     def choose_player(self, player1, player2, game_state) -> int:
-        """Choisit entre le joueur 0 ou 1."""
-        if random.random() < self.rating_knowledge:
-            r1 = player1.get_rating_force()
-            r2 = player2.get_rating_force()
-            return 0 if r1 >= r2 else 1
-        return random.randint(0, 1)
+        """
+        Estime quel joueur est le meilleur sans lire le rating caché.
+        Se base sur la réputation et le prestige du club.
+        """
+        est1 = self._estimate_player_strength(player1)
+        est2 = self._estimate_player_strength(player2)
+        
+        # Si estimation proche, petite chance de doute
+        if abs(est1 - est2) < 3:
+            if self.rng.random() < 0.2:
+                return 1 if est1 >= est2 else 0
+        
+        return 0 if est1 >= est2 else 1
 
-    def choose_exchange_take(self, opponent_players: list, n: int) -> list:
-        """Choisit N joueurs à prendre dans l'équipe adverse."""
+    def _estimate_player_strength(self, player) -> float:
+        """
+        Simule l'évaluation subjective d'un joueur.
+        Utilise la réputation internationale et le prestige du club.
+        """
+        # Baseline : la réputation internationale (1-5) donne une grosse indication
+        rep = getattr(player, "reputation", 1)
+        base_fame = 65 + (rep * 6) # 1->71, 2->77, 3->83, 4->89, 5->95
+        
+        # Le "perçu" du niveau global (simule la connaissance de la fiche du joueur)
+        perceived_ovr = getattr(player, "overall_reputation", 75)
+        
+        error_margin = self.profile["pick_error_margin"]
+        noise = self.rng.gauss(0, 20 * error_margin)
+        
+        # Simulation du prestige du club
+        prestige_bonus = 0
+        famous_clubs = ["Real Madrid", "Manchester City", "Barcelona", "Bayern München", "Liverpool", "PSG", "Arsenal", "Inter"]
+        if player.club in famous_clubs:
+            prestige_bonus = self.rng.uniform(1, 4)
+            
+        return (base_fame * 0.4 + perceived_ovr * 0.6) + noise + prestige_bonus
+
+    # ── Système d'Échange (Cartons Rouges) ─────────────────
+    
+    def choose_exchange_take(self, opponent_players: list, count: int) -> list:
+        """
+        Choisit le(s) meilleur(s) joueur(s) de l'adversaire à lui voler (Take).
+        L'IA sélectionne les joueurs avec les plus hautes statistiques estimées.
+        """
         if not opponent_players:
             return []
-        n = min(n, len(opponent_players))
-        if random.random() < self.rating_knowledge:
-            ranked = sorted(opponent_players,
-                            key=lambda p: p.get_rating_force(), reverse=True)
-            return ranked[:n]
-        return random.sample(opponent_players, n)
+        sorted_players = sorted(opponent_players, key=lambda p: self._estimate_player_strength(p), reverse=True)
+        return sorted_players[:count]
 
-    def choose_exchange_give(self, own_players: list, n: int) -> list:
-        """Choisit N de ses propres joueurs à donner."""
-        if not own_players:
+    def choose_exchange_give(self, my_bench: list, count: int) -> list:
+        """
+        Choisit le(s) joueur(s) de son propre banc à donner à l'adversaire (Give).
+        L'IA sélectionne ses joueurs les plus faibles.
+        """
+        if not my_bench:
             return []
-        n = min(n, len(own_players))
-        if random.random() < self.rating_knowledge:
-            ranked = sorted(own_players,
-                            key=lambda p: p.get_rating_force())
-            return ranked[:n]
-        return random.sample(own_players, n)
+        sorted_players = sorted(my_bench, key=lambda p: self._estimate_player_strength(p))
+        return sorted_players[:count]
 
-    # ─────────────────────────────────────────────────────
-    # MISE À JOUR Q-TABLE
-    # ─────────────────────────────────────────────────────
-    def update(self, state: str, action: str, reward: float, next_state: str):
-        """Mise à jour Q-Learning classique."""
-        old_q = self.q_table.get((state, action), 0.0)
-        next_actions = ["buzz", "wait", "answer", "pick0", "pick1"]
-        next_q_vals  = [self.q_table.get((next_state, a), 0.0)
-                        for a in next_actions]
-        max_next_q   = max(next_q_vals) if next_q_vals else 0.0
-        new_q = old_q + self.alpha * (reward + self.gamma * max_next_q - old_q)
-        self.q_table[(state, action)] = new_q
+    # ── Système de Skip ───────────────────────────────────
 
-    # ─────────────────────────────────────────────────────
-    # SAUVEGARDE / CHARGEMENT
-    # ─────────────────────────────────────────────────────
-    def save(self, path: str = "ai/agent_trained.pkl"):
-        """Sauvegarde la Q-table entraînée."""
-        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-        with open(path, "wb") as f:
-            pickle.dump({
-                "q_table":    self.q_table,
-                "difficulty": self.difficulty,
-                "epsilon":    self.epsilon,
-            }, f)
-        print(f"[AI] Agent sauvegardé → {path}  ({len(self.q_table)} entrées)")
+    def should_skip(self, game_state) -> bool:
+        """Parfois l'IA préfère passer si elle n'est pas confiante."""
+        confidence = self._calculate_confidence(game_state)
+        
+        # Si confiance très basse, on a une chance de skip
+        if confidence < 0.3:
+            return self.rng.random() < self.profile["skip_tendency"]
+        return False
 
-    def load(self, path: str = "ai/agent_trained.pkl"):
-        """Charge une Q-table pré-entraînée."""
-        if not os.path.exists(path):
-            print(f"[AI] Pas de fichier {path} — agent vierge")
-            return
-        with open(path, "rb") as f:
-            data = pickle.load(f)
-        self.q_table = data.get("q_table", {})
-        print(f"[AI] Agent chargé ← {path}  ({len(self.q_table)} entrées)")
+    def should_accept_skip(self) -> bool:
+        """Accepte le skip de l'adversaire si pas confiant."""
+        return self.rng.random() < self.profile["skip_tendency"] * 1.5
+
+    # ── Helpers Internes ──────────────────────────────────
+
+    def _calculate_confidence(self, game_state) -> float:
+        """Calcule un score de confiance interne [0, 1]."""
+        # Pour l'instant, basé sur la difficulté de base + momentum
+        base_conf = self.profile["accuracy"]["MCQ"] # Proxy pour la connaissance générale
+        return min(1.0, base_conf * self.confidence_modifier)
+
+    def _is_losing(self, game_state) -> bool:
+        """Vérifie si l'IA est en train de perdre."""
+        my_score = game_state.team_bleu.total_rating_revealed
+        opp_score = game_state.team_rouge.total_rating_revealed
+        return my_score < (opp_score - 10)
+
+    def _on_success(self):
+        self._consecutive_successes += 1
+        self._consecutive_failures = 0
+        self.confidence_modifier = min(1.3, 1.0 + (self._consecutive_successes * 0.05))
+
+    def _on_failure(self):
+        self._consecutive_failures += 1
+        self._consecutive_successes = 0
+        self.confidence_modifier = max(0.7, 1.0 - (self._consecutive_failures * 0.05))
+
+    # Trigger de réaction émotionnelle (pour l'UI)
+    def get_reaction(self, event_type: str) -> str:
+        """Retourne un état émotionnel basé sur un événement."""
+        if event_type == "wrong_answer":
+            return "FRUSTRATED" if self.difficulty == "hard" else "DISAPPOINTED"
+        if event_type == "correct_answer":
+            return "CONFIDENT" if self._consecutive_successes > 1 else "EXCITED"
+        if event_type == "lost_elite":
+            return "ANGRY"
+        return "NEUTRAL"
 
     def __repr__(self):
-        return (f"QLearningAgent(difficulty={self.difficulty}, "
-                f"epsilon={self.epsilon:.2f}, "
-                f"q_size={len(self.q_table)})")
+        return f"ComputerOpponent(difficulty={self.difficulty}, momentum={self.confidence_modifier:.2f})"

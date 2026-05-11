@@ -1,6 +1,122 @@
+# ============================================================
+# FICHIERS SENSIBLES — NE PAS PUSHER (SÉCURITÉ)
+# ============================================================
+
+# Variables d'environnement avec clés API
+.env
+.env.local
+.env.*.local
+.env.backup
+
+# Fichiers de configuration avec secrets
+config.local.py
+secrets.json
+credentials.json
+*.pem
+*.key
+*.p12
+
+# ============================================================
+# FICHIERS PYTHON
+# ============================================================
+
 __pycache__/
 *.pyc
 *.pyo
-assets/images/
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+*.cover
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# ============================================================
+# IDE & ÉDITEURS
+# ============================================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================
+# FICHIERS VOLUMINEUX (MÉDIAS)
+# ============================================================
+
+# Vidéos
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Musiques/Audio
+*.mp3
+*.wav
+*.flac
+*.m4a
+
+# Fichiers d'images générées (très volumineux)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+
+# ============================================================
+# DOSSIERS DE TESTS & SCRATCH
+# ============================================================
+
+scratch/
+test_*/
+*_test/
+.pytest_cache/
+
+# ============================================================
+# BASES DE DONNÉES & CACHES
+# ============================================================
+
+*.db
+*.sqlite
+*.sqlite3
+.cache/
 *.pkl
-.env
+*.pickle
+
+# ============================================================
+# FICHIERS SQL SENSIBLES
+# ============================================================
+
+# Garder les schémas, mais ignorer les dumps avec données réelles
+*_dump.sql
+*_backup.sql
+*_data.sql
+
+# ============================================================
+# FICHIERS SYSTÈME
+# ============================================================
+
+Thumbs.db
+.Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+*.tmp
+*.log

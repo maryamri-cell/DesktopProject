@@ -6,6 +6,7 @@
 PyQt5>=5.15.0
 pandas>=2.0.0
 numpy>=1.24.0
+python-dotenv>=1.0.0
 
 # Phase 3 — IA Questions + Images (décommenter quand prêt)
 # groq>=0.4.0
@@ -17,4 +18,4 @@ numpy>=1.24.0
 # gymnasium>=0.29.0
 
 # Phase 5 — Multijoueur (décommenter quand prêt)
-# supabase>=2.0.0
+supabase>=2.5.0
