@@ -60,18 +60,19 @@ ENV/
 # FICHIERS VOLUMINEUX (MÉDIAS)
 # ============================================================
 
-# Vidéos
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.webm
+# Vidéos (ignorer les vidéos volumineuses de développement)
+# *.mp4
+# *.avi
+# *.mov
+# *.mkv
+# *.webm
 
-# Musiques/Audio
-*.mp3
-*.wav
-*.flac
-*.m4a
+# Musiques/Audio — INCLURE les fichiers essentiels au jeu
+# Les fichiers .mp3 du jeu sont dans le répertoire racine et doivent être inclus
+# *.mp3
+# *.wav
+# *.flac
+# *.m4a
 
 # Fichiers d'images générées (très volumineux)
 *.png
