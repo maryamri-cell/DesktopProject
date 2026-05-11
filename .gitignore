@@ -60,26 +60,17 @@ ENV/
 # FICHIERS VOLUMINEUX (MÉDIAS)
 # ============================================================
 
-# Vidéos (ignorer les vidéos volumineuses de développement)
-# *.mp4
-# *.avi
-# *.mov
-# *.mkv
-# *.webm
+# Vidéos — INCLURE les fichiers du jeu
+# (vidéos uniquement avec ce pattern ne sont pas ignorées)
 
 # Musiques/Audio — INCLURE les fichiers essentiels au jeu
-# Les fichiers .mp3 du jeu sont dans le répertoire racine et doivent être inclus
-# *.mp3
-# *.wav
-# *.flac
-# *.m4a
+# (fichiers audio non ignorés - essentiels au gameplay)
 
-# Fichiers d'images générées (très volumineux)
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
+# Fichiers d'images générées (très volumineux - IGNORER sauf UI essentielles)
+Gemini_Generated_Image_*.png
+backgroundexchangetfinal.png
+boutton1-removebg-preview.png
+boutton2-removebg-preview.png
 
 # ============================================================
 # DOSSIERS DE TESTS & SCRATCH
