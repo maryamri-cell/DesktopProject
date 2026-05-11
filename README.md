@@ -498,7 +498,7 @@ Ce projet a été réalisé dans le cadre d'une formation d'ingénierie logiciel
 ## Support et contact
 
 Pour questions ou problèmes :
-- Email : contact@ahsankhota.com
+- Email : houda.boughnam@gmail.com
 - Issues : GitHub Issues
 - Discussions : GitHub Discussions
 
